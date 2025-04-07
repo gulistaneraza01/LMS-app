@@ -1,0 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import "tailwindcss";
+
+html {
+  font-family: "Outfit", sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  width: 90%;
+  margin: auto;
+}
+
+.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.7s ease;
+}
+
+.course-detail h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+  margin: 2rem 0;
+}
+
+.course-detail p {
+  margin: 1rem 0;
+}
+
+.course-detail li {
+  list-style-type: disc;
+  margin-left: 2rem;
+}
