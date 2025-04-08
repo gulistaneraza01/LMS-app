@@ -1,3 +1,4 @@
+import { Rating } from "react-simple-star-rating";
 import Companies from "../../components/student/Companies";
 import CourseSection from "../../components/student/CourseSection";
 import Hero from "../../components/student/Hero";
@@ -17,6 +18,7 @@ function Home() {
         <Testimonials />
         <CallToAction />
       </div>
+
       <div className="bg-gray-900">
         <Footer />
       </div>

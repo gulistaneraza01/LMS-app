@@ -84,22 +84,22 @@ function CourseDetail() {
               <div className="pt-8 text-gray-800 mb-20">
                 <p className="text-xl font-semibold">Course Structure</p>
                 <div className="mt-5">
-                  {courseData.courseContent.map((chapter) => {
-                    return (
-                      <DropdownPlaylist
-                        {...chapter}
-                        key={chapter.chapterId}
-                        setPlayerData={setPlayerData}
-                      />
-                    );
-                  })}
+                  {courseData &&
+                    courseData.courseContent.map((chapter) => {
+                      return (
+                        <DropdownPlaylist
+                          {...chapter}
+                          key={chapter.chapterId}
+                          setPlayerData={setPlayerData}
+                        />
+                      );
+                    })}
                 </div>
               </div>
 
               <h3 className="text-xl text-gray-900 font-semibold">
                 Course Description
               </h3>
-              {/* text-xl text-gray-900 font-bold mb-4 mt-8 */}
 
               <p
                 className="course-detail"

@@ -9,9 +9,13 @@ function AppProvider({ children }) {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [isEducator, setIsEducator] = useState(true);
   useEffect(() => {
+    fetchAppdata();
+  }, []);
+
+  const fetchAppdata = async () => {
     setAllCourses(dummyCourses);
     setEnrolledCourses(dummyCourses);
-  }, []);
+  };
 
   const calAvgRating = (courseRatings) => {
     if (courseRatings.length) {
