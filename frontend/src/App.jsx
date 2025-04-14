@@ -5,7 +5,9 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
+
 import {
+  AddCourse,
   CourseDetail,
   CourseList,
   Dashboard,
@@ -17,6 +19,7 @@ import {
   StudentEnrolled,
 } from "./pages";
 import Educator from "./layouts/Educator";
+import "quill/dist/quill.snow.css";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,7 +34,7 @@ const router = createBrowserRouter(
 
       <Route path="/educator" element={<Educator />}>
         <Route index element={<Dashboard />} />
-        <Route path="addCourse" element={<CourseDetail />} />
+        <Route path="addCourse" element={<AddCourse />} />
         <Route path="myCourse" element={<MyCourse />} />
         <Route path="studentEnrolled" element={<StudentEnrolled />} />
       </Route>

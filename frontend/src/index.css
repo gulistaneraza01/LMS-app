@@ -31,3 +31,7 @@ html {
   list-style-type: disc;
   margin-left: 2rem;
 }
+
+.active {
+  color: rebeccapurple;
+}
