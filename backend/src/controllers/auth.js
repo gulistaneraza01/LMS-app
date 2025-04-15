@@ -1,9 +1,10 @@
 import { Webhook } from "svix";
 import User from "../models/user.js";
+import { clerkWebhookSecret } from "../utils/constaints.js";
 
 //store user data to DB from clerk
 const userClerkWebHooks = async (req, res) => {
-  const whook = new Webhook(clerkWEbhookSecret);
+  const whook = new Webhook(clerkWebhookSecret);
   try {
     await whook.verify(req.body, req.headers);
 
