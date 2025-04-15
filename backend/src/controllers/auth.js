@@ -14,46 +14,39 @@ const userClerkWebHooks = async (req, res) => {
     const { data, type } = req.body;
     switch (type) {
       case "user.created": {
-        const newUserData = {
-          clerkId: data.id,
-          firstName: data.first_name,
-          lastName: data.last_name,
+        const newUser = {
+          _id: data.id,
+          name: `${data.first_name} ${data.last_name}`,
           email: data.email_addresses[0].email_address,
-          photo: data.image_url,
+          imageUrl: data.image_url,
         };
-        const newUser = new User(newUserData);
-        const doc = await newUser.save();
-        res.status(201).json({ doc });
-        break;
-      }
-      case "user.updated": {
-        // const newUserData = {
-        //   firstName: data.first_name,
-        //   lastName: data.last_name,
-        //   email: data.email_addresses[0].email_address,
-        //   photo: data.image_url,
-        // };
-        // const query = User.findOneAndUpdate({ clerkId: data.id }, newUserData);
-        // const doc = await query.exec();
-        // res.status(201).json({ doc });
-        // break;
-        const _id = data.id;
-        const name = `${data.first_name} ${data.last_name}`;
-        const email = data.email_addresses[0].email_address;
-        const imageUrl = data.image_url;
-        const newUser = { _id, name, email, imageUrl };
         await User.create(newUser);
-        res.json({ success: true, message: "user created" });
+        res.status(201).json({ success: true, message: "user created" });
         break;
       }
+
+      case "user.updated": {
+        const updateUser = {
+          name: `${data.first_name} ${data.last_name}`,
+          email: data.email_addresses[0].email_address,
+          imageUrl: data.image_url,
+        };
+        await User.findByIdAndUpdate(data.id, updateUser);
+        res.json({ success: true, message: "user updated" });
+        break;
+      }
+
       case "user.deleted": {
-        const query = User.findOneAndDelete({ clerkId: data.id });
-        const doc = await query.exec();
-        res.status(201).json({ doc });
+        await User.findByIdAndDelete(data.id);
+        res.json({ success: true, message: "user deleted" });
         break;
       }
+
+      default:
+        break;
     }
-    console.log(req.headers, req.body);
+
+    console.log({ a: req.headers, b: req.body });
     return res.json({ success: true });
   } catch (error) {
     console.log(error.message);
