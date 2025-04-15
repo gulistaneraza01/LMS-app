@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-const mongoDBUri = process.env.MONGODB_URI;
+const mongoDBUrl = process.env.MONGODB_URL;
+const clerkWEbhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
-export { mongoDBUri };
+export { mongoDBUrl, clerkWEbhookSecret };
