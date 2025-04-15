@@ -22,6 +22,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/client", client);
 app.use("/api/auth", auth);
 
+app.get("/", (req, res) => res.send("backend server is working"));
+
 //Server Listening
 connectDB()
   .then(() => {
