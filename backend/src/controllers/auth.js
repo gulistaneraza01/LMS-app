@@ -27,15 +27,23 @@ const userClerkWebHooks = async (req, res) => {
         break;
       }
       case "user.updated": {
-        const newUserData = {
-          firstName: data.first_name,
-          lastName: data.last_name,
-          email: data.email_addresses[0].email_address,
-          photo: data.image_url,
-        };
-        const query = User.findOneAndUpdate({ clerkId: data.id }, newUserData);
-        const doc = await query.exec();
-        res.status(201).json({ doc });
+        // const newUserData = {
+        //   firstName: data.first_name,
+        //   lastName: data.last_name,
+        //   email: data.email_addresses[0].email_address,
+        //   photo: data.image_url,
+        // };
+        // const query = User.findOneAndUpdate({ clerkId: data.id }, newUserData);
+        // const doc = await query.exec();
+        // res.status(201).json({ doc });
+        // break;
+        const _id = data.id;
+        const name = `${data.first_name} ${data.last_name}`;
+        const email = data.email_addresses[0].email_address;
+        const imageUrl = data.image_url;
+        const newUser = { _id, name, email, imageUrl };
+        await User.create(newUser);
+        res.json({ success: true, message: "user created" });
         break;
       }
       case "user.deleted": {
