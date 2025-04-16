@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { dummyCourses } from "../assets/assets";
 import humanizeDuration from "humanize-duration";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import axios from "axios";
 
 const AppContext = createContext();
 
@@ -8,6 +10,21 @@ function AppProvider({ children }) {
   const [allCourses, setAllCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [isEducator, setIsEducator] = useState(true);
+
+  const { getToken } = useAuth();
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      getUserToken();
+    }
+  }, [user]);
+
+  async function getUserToken() {
+    console.log(user);
+    console.log(await getToken());
+  }
+
   useEffect(() => {
     fetchAppdata();
   }, []);

@@ -1,5 +1,5 @@
 import { Webhook } from "svix";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import { clerkWebhookSecret } from "../utils/constaints.js";
 
 //store user data to DB from clerk
@@ -12,6 +12,7 @@ const userClerkWebHooks = async (req, res) => {
       "svix-timestamp": req.headers["svix-timestamp"],
     });
     const { data, type } = req.body;
+
     switch (type) {
       case "user.created": {
         const newUser = {

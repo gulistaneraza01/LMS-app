@@ -1,6 +1,23 @@
-// getAllCourses
-const getAllCourses = async (req, res) => {
-  res.send("working");
+import { clerkClient } from "@clerk/express";
+
+//become Admin
+const becomeAdmin = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    await clerkClient.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        role: "admin",
+      },
+    });
+
+    return res.json({ success: true, message: "updated to Admin" });
+  } catch (error) {
+    return res.status(403).json({ success: false, message: error.message });
+  }
 };
 
-export { getAllCourses };
+// getAllCourses
+const getAllCourses = async (req, res) => {};
+
+export { getAllCourses, becomeAdmin };
