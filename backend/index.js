@@ -39,10 +39,6 @@ app.use("/api/admin", authenticateAdmin, admin);
 app.use("/api/auth", auth);
 
 app.get("/", (req, res) => res.send("backend server is working"));
-app.get("/test", (req, res) => {
-  console.log("inside main code");
-  return res.send("hello");
-});
 
 //Server Listening
 connectDB()
