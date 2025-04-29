@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import Course from "../models/Course.js";
 import getDataURI from "../utils/getDataURI.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import Purchase from "../models/Purchase.js";
 
 // add new Courses
