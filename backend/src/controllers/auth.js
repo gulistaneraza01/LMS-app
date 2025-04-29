@@ -46,4 +46,22 @@ const userClerkWebHooks = async (req, res) => {
   }
 };
 
-export { userClerkWebHooks };
+//get user data
+const getUser = async (req, res) => {
+  const userId = req.auth.userId;
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user not found" });
+    }
+
+    return res.json({ success: true, user });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export { userClerkWebHooks, getUser };

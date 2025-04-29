@@ -1,4 +1,9 @@
 import { clerkClient } from "@clerk/express";
+import Course from "../models/Course.js";
+import Testimonial from "../models/Testimonial.js";
+import Purchase from "../models/Purchase.js";
+import Stripe from "stripe";
+import { currency, stripeSecretKey } from "../utils/constaints.js";
 
 //become Admin
 const becomeAdmin = async (req, res) => {
@@ -13,11 +18,155 @@ const becomeAdmin = async (req, res) => {
 
     return res.json({ success: true, message: "updated to Admin" });
   } catch (error) {
-    return res.status(403).json({ success: false, message: error.message });
+    return res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// getAllCourses
-const getAllCourses = async (req, res) => {};
+//allCoursedata
+const getAllCourses = async (req, res) => {
+  try {
+    const courses = await Course.find({ isPublished: true })
+      .select("-courseContent -enrolledStudents")
+      .populate({ path: "educator" });
+    return res.json({ status: true, courses });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
 
-export { getAllCourses, becomeAdmin };
+//get course by id
+const getCourseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const courseData = await Course.findById(id).populate({ path: "educator" });
+
+    courseData.courseContent.forEach((chapter) => {
+      chapter.chapterContent.forEach((lecture) => {
+        if (!lecture.isPreviewFree) {
+          lecture.lectureUrl = "";
+        }
+      });
+    });
+
+    return res.json({ success: true, courseData });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+//student enrolled with lecture link
+const studentEnrolledCourse = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const userData = await User.findById(userId).populate("enrolledCourses");
+
+    return res.json({
+      success: true,
+      enrolledCouses: userData.enrolledCourses,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+//addtestimonial
+const addTestimonial = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { role, rating, feedback } = req.body;
+    const testimonial = { userId, role, rating, feedback };
+    await Testimonial.create(testimonial);
+    return res.json({ status: true, message: "thank you for giving rating" });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+//getTestimonial
+const getTestimonial = async (req, res) => {
+  try {
+    const testimonial = await Testimonial.find().populate({
+      path: "educator",
+      select: "name imageUrl",
+    });
+    const testimonialData = testimonial.map((e) => {
+      return { ...e, image: e.imageUrl };
+    });
+
+    res.json({ status: true, testimonialData });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+//purchasecourse
+const purchaseCourse = async (req, res) => {
+  console.log(req.auth.userId);
+  try {
+    const { courseId } = req.body;
+    const { origin } = req.headers;
+    const { userId } = req.auth;
+
+    const userData = await User.findById(userId);
+    const courseData = await Course.findById(courseId);
+
+    if (!userData || !courseData) {
+      return res.status(400).json({
+        success: false,
+        message: "Data not Found",
+      });
+    }
+
+    const purchaseData = {
+      courseId: courseData._id,
+      userId: userData._id,
+      amount: (
+        courseData.coursePrice -
+        (courseData.discount * courseData.coursePrice) / 100
+      ).toFixed(2),
+    };
+
+    const newPurchase = await Purchase.create(purchaseData);
+    console.log(newPurchase);
+
+    //stripe gateway init
+    const stripeInstance = new Stripe(stripeSecretKey);
+
+    const line_items = [
+      {
+        price_data: {
+          currency,
+          product_data: {
+            name: courseData.courseTitle,
+          },
+          unit_amount: Math.floor(newPurchase.amount) * 100,
+        },
+        quantity: 1,
+      },
+    ];
+
+    const session = await stripeInstance.checkout.sessions.create({
+      success_url: `${origin}/loading/my-enrollments`,
+      cancel_url: `${origin}/`,
+      line_items: line_items,
+      mode: "payment",
+      metadata: {
+        purchaseId: newPurchase._id.toString(),
+      },
+    });
+
+    res.json({ success: true, session_url: session.url });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export {
+  becomeAdmin,
+  getAllCourses,
+  addTestimonial,
+  getTestimonial,
+  getCourseById,
+  studentEnrolledCourse,
+  purchaseCourse,
+};
