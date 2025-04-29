@@ -4,6 +4,7 @@ import { clerkWebhookSecret } from "../utils/constaints.js";
 
 //store user data to DB from clerk
 const userClerkWebHooks = async (req, res) => {
+  console.log("inside cleark called");
   try {
     const wbhooks = new Webhook(clerkWebhookSecret);
     await wbhooks.verify(JSON.stringify(req.body), {
