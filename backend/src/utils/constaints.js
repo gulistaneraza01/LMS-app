@@ -10,6 +10,7 @@ const cloudinarySecretKey = process.env.CLOUDINARY_SECRET_KEY;
 const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const currency = process.env.CURRENCY;
 
 export {
@@ -23,4 +24,5 @@ export {
   stripePublishableKey,
   stripeSecretKey,
   currency,
+  stripeWebhookSecret,
 };

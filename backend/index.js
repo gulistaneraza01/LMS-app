@@ -16,6 +16,7 @@ import {
   cloudinarySecretKey,
 } from "./src/utils/constaints.js";
 import authenticateAdmin from "./src/middlewares/authenticateAdmin.js";
+import { verifyPayment } from "./src/controllers/client.js";
 
 const app = express();
 
@@ -37,6 +38,11 @@ cloudinary.config({
 app.use("/api/client", client);
 app.use("/api/admin", authenticateAdmin, admin);
 app.use("/api/auth", auth);
+app.post(
+  "/verifypayment",
+  express.raw({ type: "application/json" }),
+  verifyPayment
+);
 
 app.get("/", (req, res) => res.send("backend server is working"));
 

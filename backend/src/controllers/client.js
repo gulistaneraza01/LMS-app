@@ -3,7 +3,9 @@ import Course from "../models/Course.js";
 import Testimonial from "../models/Testimonial.js";
 import Purchase from "../models/Purchase.js";
 import Stripe from "stripe";
-import { currency, stripeSecretKey } from "../utils/constaints.js";
+import { currency, stripeWebhookSecret } from "../utils/constaints.js";
+import User from "../models/User.js";
+import stripeInstance from "../config/stripInstance.js";
 
 //become Admin
 const becomeAdmin = async (req, res) => {
@@ -101,7 +103,6 @@ const getTestimonial = async (req, res) => {
 
 //purchasecourse
 const purchaseCourse = async (req, res) => {
-  console.log(req.auth.userId);
   try {
     const { courseId } = req.body;
     const { origin } = req.headers;
@@ -127,10 +128,8 @@ const purchaseCourse = async (req, res) => {
     };
 
     const newPurchase = await Purchase.create(purchaseData);
-    console.log(newPurchase);
 
     //stripe gateway init
-    const stripeInstance = new Stripe(stripeSecretKey);
 
     const line_items = [
       {
@@ -139,14 +138,14 @@ const purchaseCourse = async (req, res) => {
           product_data: {
             name: courseData.courseTitle,
           },
-          unit_amount: Math.floor(newPurchase.amount) * 100,
+          unit_amount: Math.floor(newPurchase.amount * 100),
         },
         quantity: 1,
       },
     ];
 
     const session = await stripeInstance.checkout.sessions.create({
-      success_url: `${origin}/loading/my-enrollments`,
+      success_url: `${origin}/myEnrollment`,
       cancel_url: `${origin}/`,
       line_items: line_items,
       mode: "payment",
@@ -161,6 +160,76 @@ const purchaseCourse = async (req, res) => {
   }
 };
 
+//verifyPayment  stripe webhook
+const verifyPayment = async (req, res) => {
+  console.log("called");
+  const sig = request.headers["stripe-signature"];
+
+  let event;
+
+  try {
+    event = Stripe.webhooks.constructEvent(
+      request.body,
+      sig,
+      stripeWebhookSecret
+    );
+  } catch (err) {
+    response.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case "payment_intent.succeeded": {
+      const paymentIntent = event.data.object;
+
+      const session = await stripeInstance.checkout.sessions.list({
+        payment_intent: paymentIntent.id,
+      });
+
+      console.log("inside true", { paymentIntent, session });
+
+      const { purchaseId } = session.data[0].metadata;
+
+      const purchaseData = await Purchase.findById(purchaseId);
+      const userData = await User.findById(purchaseData.userId);
+      const courseData = await Course.findById(
+        purchaseData.courseId.toString()
+      );
+
+      courseData.enrolledStudents.push(courseData);
+      await courseData.save();
+
+      userData.enrolledCourses.push(courseData.id);
+      await userData.save();
+
+      purchaseData.status = "completed";
+      await purchaseData.save();
+
+      break;
+    }
+
+    case "payment_method.payment_failed": {
+      const paymentIntant = event.data.object;
+
+      const session = await stripeInstance.checkout.sessions.list({
+        payment_intent: paymentIntant.id,
+      });
+
+      const { purchaseId } = session.data[0].metadata;
+
+      await Purchase.findByIdAndUpdate(purchaseId, { status: "failed" });
+
+      break;
+    }
+
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  // Return a response to acknowledge receipt of the event
+  response.json({ received: true });
+};
+
 export {
   becomeAdmin,
   getAllCourses,
@@ -169,4 +238,5 @@ export {
   getCourseById,
   studentEnrolledCourse,
   purchaseCourse,
+  verifyPayment,
 };
