@@ -163,7 +163,7 @@ const purchaseCourse = async (req, res) => {
 //verifyPayment  stripe webhook
 const verifyPayment = async (req, res) => {
   console.log("called");
-  const sig = request.headers["stripe-signature"];
+  const sig = req.headers["stripe-signature"];
 
   let event;
 
