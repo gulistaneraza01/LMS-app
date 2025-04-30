@@ -191,7 +191,7 @@ const verifyPayment = async (req, res) => {
         purchaseData.courseId.toString()
       );
 
-      courseData.enrolledStudents.push(courseData);
+      courseData.enrolledStudents.push(userData.id);
       await courseData.save();
 
       userData.enrolledCourses.push(courseData.id);

@@ -64,3 +64,5 @@ export const dummydata = {
   ],
   courseThumbnail: "https://img.youtube.com/vi/CBWnBi-awSA/maxresdefault.jpg",
 };
+
+///in strip conformation you send only userid on db
