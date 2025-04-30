@@ -168,13 +168,9 @@ const verifyPayment = async (req, res) => {
   let event;
 
   try {
-    event = Stripe.webhooks.constructEvent(
-      request.body,
-      sig,
-      stripeWebhookSecret
-    );
+    event = Stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
   } catch (err) {
-    response.status(400).send(`Webhook Error: ${err.message}`);
+    res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Handle the event
@@ -227,7 +223,7 @@ const verifyPayment = async (req, res) => {
   }
 
   // Return a response to acknowledge receipt of the event
-  response.json({ received: true });
+  res.json({ received: true });
 };
 
 export {
