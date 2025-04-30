@@ -162,7 +162,6 @@ const purchaseCourse = async (req, res) => {
 
 //verifyPayment  stripe webhook
 const verifyPayment = async (req, res) => {
-  console.log("called");
   const sig = req.headers["stripe-signature"];
 
   let event;
@@ -172,7 +171,7 @@ const verifyPayment = async (req, res) => {
   } catch (err) {
     res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
+  console.log(event);
   // Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
