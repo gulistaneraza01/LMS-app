@@ -23,9 +23,16 @@ const app = express();
 //port
 const port = process.env.PORT || 8000;
 
-//middleware
 app.use(cors({ credentials: true, origin: "*" }));
 app.use(clerkMiddleware());
+
+app.post(
+  "/verifypayment",
+  express.raw({ type: "application/json" }),
+  verifyPayment
+);
+
+//middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 cloudinary.config({
@@ -38,11 +45,6 @@ cloudinary.config({
 app.use("/api/client", client);
 app.use("/api/admin", authenticateAdmin, admin);
 app.use("/api/auth", auth);
-app.post(
-  "/verifypayment",
-  express.raw({ type: "application/json" }),
-  verifyPayment
-);
 
 app.get("/", (req, res) => res.send("backend server is working"));
 
