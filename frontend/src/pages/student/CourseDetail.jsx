@@ -28,6 +28,7 @@ function CourseDetail() {
     fetchCourse();
   }, [courseData]);
 
+  console.log(playerData);
   return (
     <div className="bg-gradient-to-b from-cyan-100/70">
       <div className="container">
@@ -113,7 +114,7 @@ function CourseDetail() {
             <div className="shadow-2xl max-w-[424px] bg-white">
               {playerData ? (
                 <YouTube
-                  id={playerData.videoId}
+                  videoId={playerData.videoId}
                   opts={{ playerVars: { autoplay: 1 } }}
                   iframeClassName="w-full aspect-video"
                 />

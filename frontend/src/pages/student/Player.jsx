@@ -72,7 +72,7 @@ function Player({ initialRating }) {
             {playerData ? (
               <>
                 <YouTube
-                  id={playerData.videoId}
+                  videoId={playerData.videoId}
                   opts={{ playerVars: { autoplay: 1 } }}
                   iframeClassName="w-full aspect-video"
                 />
