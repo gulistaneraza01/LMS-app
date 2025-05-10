@@ -2,8 +2,14 @@ import Quill from "quill";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { assets } from "../../assets/assets";
+import { useAppContext } from "../../contexts/AppProvider";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function AddCourse() {
+  const { getToken } = useAppContext();
+
   const [courseTitle, setCourseTitle] = useState("");
   const [coursePrice, setCoursePrice] = useState(0);
   const [discount, setDiscount] = useState(0);
@@ -85,9 +91,46 @@ function AddCourse() {
     });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    console.log({ chapters });
+  async function handleSubmit(e) {
+    try {
+      e.preventDefault();
+      if (!image) {
+        toast.error("Thumbnail Not selected");
+      }
+
+      const courseData = {
+        courseTitle,
+        courseDescription: quillRef.current.root.innerHTML,
+        coursePrice: Number(coursePrice),
+        isPublished: true,
+        discount: Number(discount),
+        courseContent: chapters,
+      };
+
+      const formData = new FormData();
+      formData.append("courseData", JSON.stringify(courseData));
+      formData.append("file", image);
+
+      const token = await getToken();
+
+      const { data } = await axios.post(apiRoutes.addCourse, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        toast.success(data.message);
+        setCoursePrice(0);
+        setChapters([]);
+        setDiscount(0);
+        setImage(null);
+        setCourseTitle("");
+        quillRef.current.root.innerHTML = "";
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 
   function handleLecture(action, chapterId, lectureIndex) {

@@ -6,6 +6,7 @@ import Purchase from "../models/Purchase.js";
 
 // add new Courses
 const addCourse = async (req, res) => {
+  console.log("called");
   try {
     const file = req.file;
     const userId = req.auth.userId;
@@ -45,7 +46,7 @@ const getEducatorCourse = async (req, res) => {
     const userId = req.auth.userId;
     const courses = await Course.find({ educator: userId });
 
-    return res.json({ status: true, courses });
+    return res.json({ success: true, courses });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -63,8 +64,6 @@ const dashboardData = async (req, res) => {
       courseId: { $in: courseIds },
       status: "completed",
     });
-
-    console.log(purchases);
 
     const totalEarnings = purchases.reduce((acc, cur) => acc + cur.amount, 0);
 

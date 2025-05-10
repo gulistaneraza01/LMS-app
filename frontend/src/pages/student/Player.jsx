@@ -5,31 +5,125 @@ import EnrolledDropDownPlaylist from "./EnrolledDropDownPlaylist";
 import YouTube from "react-youtube";
 import Footer from "./Footer";
 import { Rating } from "react-simple-star-rating";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function Player({ initialRating }) {
   const [courseData, setCourseData] = useState(null);
   const [playerData, setPlayerData] = useState(null);
   const [rating, setRating] = useState(initialRating || 0);
+  const [progressData, setProgressData] = useState(null);
+
+  console.log("hello", progressData);
 
   const { courseId } = useParams();
-  const { enrolledCourses } = useAppContext();
+  const { enrolledCourses, fetchenrolledStudent, getToken, userData } =
+    useAppContext();
 
   useEffect(() => {
-    getCourseData();
+    if (enrolledCourses.length > 0) {
+      getCourseData();
+    }
   }, [enrolledCourses]);
+
+  const makeLectureCompleted = async (lectureId) => {
+    try {
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        apiRoutes.updateCourseProgress,
+        {
+          courseId,
+          lectureId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getCourseProgress();
+      } else {
+        toast.error(data.meesage);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const getCourseProgress = async () => {
+    try {
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        apiRoutes.courseProgress,
+        { courseId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (data.success) {
+        setProgressData(data.progressData);
+      } else {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   function getCourseData() {
     enrolledCourses.map((course) => {
       if (course._id === courseId) {
-        return setCourseData(course);
+        setCourseData(course);
+
+        course.courseRatings.map((item) => {
+          if (item.userId === userData._id) {
+            setRating(item.rating);
+          }
+        });
       }
     });
   }
 
-  function handleRating(rate) {
-    console.log(rate);
+  async function handleRating(rate) {
     setRating(rate);
+    try {
+      const token = await getToken();
+      console.log({ rating });
+      const { data } = await axios.post(
+        apiRoutes.courseRating,
+        {
+          courseId,
+          rating,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        fetchenrolledStudent();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.meesage);
+    }
   }
+
+  useEffect(() => {
+    getCourseProgress();
+  }, []);
 
   return (
     <div>
@@ -82,8 +176,16 @@ function Player({ initialRating }) {
                     <span className="mx-1"></span>
                     {playerData.lectureTitle}
                   </p>
-                  <button className="text-blue-500 cursor-pointer">
-                    {false ? "Completed" : "Mark Completed"}
+                  <button
+                    onClick={() => {
+                      makeLectureCompleted(playerData.lectureId);
+                    }}
+                    className="text-blue-500 cursor-pointer"
+                  >
+                    {progressData &&
+                    progressData.lectureCompleted.includes(playerData.lectureId)
+                      ? "Completed"
+                      : "Mark Complete"}
                   </button>
                 </div>
               </>

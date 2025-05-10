@@ -1,12 +1,42 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { useAppContext } from "../../contexts/AppProvider";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function NavBar() {
   const { openSignIn } = useClerk();
   const { user } = useUser();
-  const { isEducator } = useAppContext();
+  const navigate = useNavigate();
+  const { isEducator, getToken, setIsEducator } = useAppContext();
+
+  const becomeEducator = async () => {
+    try {
+      if (isEducator) {
+        navigate("/educator");
+        return;
+      }
+
+      const token = await getToken();
+
+      const { data } = await axios(apiRoutes.becomeEducator, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        setIsEducator(true);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <nav className="flex justify-between items-center py-3 sm:py-4 container gap-4">
@@ -21,9 +51,9 @@ function NavBar() {
         {user && (
           <>
             <li>
-              <Link to="/educator">
+              <button onClick={becomeEducator}>
                 {isEducator ? "Educator dashboard" : "Become Educator"}
-              </Link>
+              </button>
             </li>
 
             <li>
@@ -52,9 +82,9 @@ function NavBar() {
         {user && (
           <>
             <li>
-              <Link to="/educator">
+              <button onClick={becomeEducator}>
                 {isEducator ? "Educator dashboard" : "Become Educator"}
-              </Link>
+              </button>
             </li>
 
             <li>

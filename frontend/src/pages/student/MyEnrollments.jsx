@@ -1,20 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StudentEnrolledData from "../../components/student/StudentEnrolledData";
 import { useAppContext } from "../../contexts/AppProvider";
 import Footer from "./Footer";
+import { toast } from "react-toastify";
+import apiRoutes from "../../utils/apiRoutes";
+import axios from "axios";
 
 function MyEnrollments() {
-  const { enrolledCourses } = useAppContext();
-  const [progressArray, setProgressArray] = useState([
-    { lectureCompleted: 4, totalLectures: 4 },
-    { lectureCompleted: 1, totalLectures: 2 },
-    { lectureCompleted: 2, totalLectures: 7 },
-    { lectureCompleted: 0, totalLectures: 9 },
-    { lectureCompleted: 6, totalLectures: 6 },
-    { lectureCompleted: 2, totalLectures: 2 },
-    { lectureCompleted: 1, totalLectures: 8 },
-    { lectureCompleted: 5, totalLectures: 6 },
-  ]);
+  const {
+    enrolledCourses,
+    userData,
+    fetchenrolledStudent,
+    getToken,
+    calNoOfchapter,
+  } = useAppContext();
+  const [progressArray, setProgressArray] = useState([]);
+
+  const fetchProgress = async () => {
+    try {
+      const token = await getToken();
+
+      const tempProgressArray = await Promise.all(
+        enrolledCourses.map(async (course) => {
+          const { data } = await axios.post(
+            apiRoutes.courseProgress,
+            {
+              courseId: course._id,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          let totalLectures = calNoOfchapter(course);
+          const lectureCompleted = data.progressData
+            ? data.progressData.lectureCompleted.length
+            : 0;
+
+          return { totalLectures, lectureCompleted };
+        })
+      );
+
+      setProgressArray(tempProgressArray);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (userData) {
+      fetchenrolledStudent();
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (enrolledCourses.length > 0) {
+      fetchProgress();
+    }
+  }, [enrolledCourses]);
 
   return (
     <>

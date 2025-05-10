@@ -2,13 +2,42 @@ import { useEffect, useState } from "react";
 import { assets, dummyDashboardData } from "../../assets/assets";
 import { currency } from "../../utils/constaints";
 import StudentEnrolled from "./StudentEnrolled";
+import { useAppContext } from "../../contexts/AppProvider";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function Dashboard() {
+  const { isEducator, getToken } = useAppContext();
+
   const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
-    setDashboardData(dummyDashboardData);
-  }, []);
+    if (isEducator) {
+      fetchDashboadData();
+    }
+  }, [isEducator]);
+
+  const fetchDashboadData = async () => {
+    try {
+      const token = await getToken();
+
+      const { data } = await axios(apiRoutes.dashboardURL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(data);
+      if (data.success) {
+        setDashboardData(data.dashboardData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   // if (isLoading) {
   //   return <h1>loading</h1>;

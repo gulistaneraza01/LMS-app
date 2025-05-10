@@ -1,11 +1,14 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../../contexts/AppProvider";
 import { useEffect, useState } from "react";
 import { assets } from "../../assets/assets";
 import DropdownPlaylist from "../../components/student/DropdownPlaylist";
-import { currency } from "../../utils/constaints";
+import { baseUrl, currency } from "../../utils/constaints";
 import Footer from "./Footer";
 import YouTube from "react-youtube";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function CourseDetail() {
   const [courseData, setCourseData] = useState(null);
@@ -13,20 +16,75 @@ function CourseDetail() {
   const [playerData, setPlayerData] = useState(null);
 
   const { id } = useParams();
-  const { allCourses, calAvgRating, calTotalCourseDuration, calNoOfchapter } =
-    useAppContext();
+  const {
+    allCourses,
+    calAvgRating,
+    calTotalCourseDuration,
+    calNoOfchapter,
+    userData,
+    getToken,
+  } = useAppContext();
 
-  function fetchCourse() {
-    setCourseData(
-      allCourses.find((course) => {
-        return course._id === id;
-      })
-    );
+  const navigate = useNavigate();
+
+  async function fetchCourse() {
+    try {
+      const { data } = await axios(`${apiRoutes.allCourseURL}/${id}`);
+
+      if (data.success) {
+        setCourseData(data.courseData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
+
+  const enrolledCourse = async () => {
+    console.log("called");
+    try {
+      if (!userData) {
+        return toast.warn("Login To Enroll");
+      }
+
+      if (isEnrolled) {
+        return toast.warn("Already Enroll To Course");
+      }
+
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        apiRoutes.purchaseCourseUrl,
+        {
+          courseId: courseData._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("data", data);
+      if (data.success) {
+        window.location.replace(data.session_url);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
     fetchCourse();
-  }, [courseData]);
+  }, []);
+
+  useEffect(() => {
+    if (userData && courseData) {
+      setIsEnrolled(userData.enrolledCourses.includes(courseData._id));
+    }
+  }, [userData, courseData]);
 
   console.log(playerData);
   return (
@@ -78,7 +136,7 @@ function CourseDetail() {
               <p className="text-sm mt-1.5">
                 Course by{" "}
                 <span className="text-blue-600 underline">
-                  {courseData.educator}
+                  {courseData.educator?.name}
                 </span>
               </p>
 
@@ -160,7 +218,10 @@ function CourseDetail() {
                   </div>
                 </div>
 
-                <button className="bg-blue-600 w-full my-6 rounded text-white py-3">
+                <button
+                  onClick={enrolledCourse}
+                  className="bg-blue-600 w-full my-6 rounded text-white py-3"
+                >
                   {isEnrolled ? "Already Enrolled" : "Enroll Now"}
                 </button>
 

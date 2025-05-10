@@ -3,35 +3,96 @@ import { dummyCourses } from "../assets/assets";
 import humanizeDuration from "humanize-duration";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import axios from "axios";
+import apiRoutes from "../utils/apiRoutes";
+import { toast } from "react-toastify";
+import { baseUrl } from "../utils/constaints";
 
 const AppContext = createContext();
 
 function AppProvider({ children }) {
   const [allCourses, setAllCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [isEducator, setIsEducator] = useState(true);
+  const [isEducator, setIsEducator] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const { getToken } = useAuth();
   const { user } = useUser();
 
   useEffect(() => {
     if (user) {
-      getUserToken();
+      fetchUser();
+      fetchenrolledStudent();
     }
   }, [user]);
 
-  async function getUserToken() {
-    console.log(user);
-    console.log(await getToken());
-  }
+  //fetch userData
+  const fetchUser = async () => {
+    if (user.publicMetadata.role === "admin") {
+      setIsEducator(true);
+    }
+
+    try {
+      const token = await getToken();
+
+      const { data } = await axios(apiRoutes.userDataURL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        setUserData(data.user);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // async function getUserToken() {
+  //   console.log(user);
+  //   console.log(await getToken());
+  // }
 
   useEffect(() => {
-    fetchAppdata();
+    fetchAllCourse();
   }, []);
 
-  const fetchAppdata = async () => {
-    setAllCourses(dummyCourses);
-    setEnrolledCourses(dummyCourses);
+  //fetch allcourses
+  const fetchAllCourse = async () => {
+    try {
+      const { data } = await axios(apiRoutes.allCourseURL);
+
+      if (data.success) {
+        setAllCourses(data.courses);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  //fetch enrolledStudent
+  const fetchenrolledStudent = async () => {
+    try {
+      const token = await getToken();
+
+      const { data } = await axios(apiRoutes.enrolledCourses, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        setEnrolledCourses(data.enrolledCourses.reverse());
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const calAvgRating = (courseRatings) => {
@@ -79,10 +140,15 @@ function AppProvider({ children }) {
         allCourses,
         calAvgRating,
         isEducator,
+        setIsEducator,
         calTotalCourseDuration,
         calChapterDuration,
         calNoOfchapter,
         enrolledCourses,
+        userData,
+        getToken,
+        fetchAllCourse,
+        fetchenrolledStudent,
       }}
     >
       {children}

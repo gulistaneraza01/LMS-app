@@ -10,6 +10,7 @@ import CourseProgress from "../models/CourseProgress.js";
 
 //become Admin
 const becomeAdmin = async (req, res) => {
+  console.log("called");
   try {
     const userId = req.auth.userId;
 
@@ -19,7 +20,7 @@ const becomeAdmin = async (req, res) => {
       },
     });
 
-    return res.json({ success: true, message: "updated to Admin" });
+    return res.json({ success: true, message: "Become to Admin" });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -31,7 +32,7 @@ const getAllCourses = async (req, res) => {
     const courses = await Course.find({ isPublished: true })
       .select("-courseContent -enrolledStudents")
       .populate({ path: "educator" });
-    return res.json({ status: true, courses });
+    return res.json({ success: true, courses });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -62,10 +63,9 @@ const studentEnrolledCourse = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const userData = await User.findById(userId).populate("enrolledCourses");
-
     return res.json({
       success: true,
-      enrolledCouses: userData.enrolledCourses,
+      enrolledCourses: userData.enrolledCourses,
     });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -275,6 +275,8 @@ const getCourseProgress = async (req, res) => {
 const addCourseRating = async (req, res) => {
   const userId = req.auth.userId;
   const { courseId, rating } = req.body;
+
+  console.log("called", rating, courseId);
 
   if (!userId || !courseId || !rating || rating < 1 || rating > 5) {
     return res

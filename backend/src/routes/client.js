@@ -19,7 +19,7 @@ router.get("/getcourses", getAllCourses);
 router.get("/getcourses/:id", getCourseById);
 router.get("/studentenrolledcourse", studentEnrolledCourse);
 
-router.get("/getcourseprogress", getCourseProgress);
+router.post("/getcourseprogress", getCourseProgress);
 router.post("/updatecourseprogress", updateCourseProgress);
 
 router.post("/purchasecourse", purchaseCourse);

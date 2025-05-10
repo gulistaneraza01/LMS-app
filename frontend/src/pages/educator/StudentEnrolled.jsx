@@ -1,12 +1,42 @@
 import { useEffect, useState } from "react";
 import { dummyStudentEnrolled } from "../../assets/assets";
 import { format } from "date-fns";
+import apiRoutes from "../../utils/apiRoutes";
+import { useAppContext } from "../../contexts/AppProvider";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function StudentEnrolled() {
+  const { isEducator, getToken } = useAppContext();
+
   const [studentEnrolled, setStudentEnrolled] = useState(null);
+
   useEffect(() => {
-    setStudentEnrolled(dummyStudentEnrolled);
-  }, []);
+    if (isEducator) {
+      fetchStudentEnrolled();
+    }
+  }, [isEducator]);
+
+  const fetchStudentEnrolled = async () => {
+    try {
+      const token = await getToken();
+
+      const { data } = await axios(apiRoutes.enrolledStudentURL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(data);
+      if (data.success) {
+        setStudentEnrolled(data.enrolledStudents);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="sm:max-w-[90%]">

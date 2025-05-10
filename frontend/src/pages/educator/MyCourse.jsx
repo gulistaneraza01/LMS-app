@@ -2,15 +2,42 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppProvider";
 import { currency } from "../../utils/constaints";
 import { format } from "date-fns";
+import { toast } from "react-toastify";
+import axios from "axios";
+import apiRoutes from "../../utils/apiRoutes";
 
 function MyCourse() {
-  const { allCourses } = useAppContext();
+  const { isEducator, getToken } = useAppContext();
 
   const [courses, setCourses] = useState(null);
 
   useEffect(() => {
-    setCourses(allCourses);
-  }, [courses]);
+    if (isEducator) {
+      fetchMyCourse();
+    }
+  }, [isEducator]);
+
+  const fetchMyCourse = async () => {
+    try {
+      const token = await getToken();
+      console.log(token);
+
+      const { data } = await axios(apiRoutes.getEducatorCourseURL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(data);
+      if (data.success) {
+        setCourses(data.courses);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   // if (isLoading) {
   //   return <h1>loading....</h1>;
@@ -49,7 +76,7 @@ function MyCourse() {
                     (course.coursePrice * course.discount) / 100
                   ).toFixed(2)}
                 </p>
-                <p>{course.enrolledStudents.length}</p>
+                <p>{course.enrolledStudents?.length}</p>
                 <p>{format(course.createdAt, "dd MMM, yyyy")}</p>
               </div>
             );

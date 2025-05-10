@@ -15,6 +15,7 @@ function CourseCard({
   const { calAvgRating } = useAppContext();
   const avgrating = calAvgRating(courseRatings);
 
+  console.log("data", { educator });
   return (
     <Link
       to={`/course/${_id}`}
@@ -24,7 +25,7 @@ function CourseCard({
       <img src={courseThumbnail} alt="course thumbnail" className="w-full" />
       <div className="p-3 text-left">
         <h3 className="text-base font-semibold">{courseTitle}</h3>
-        <p className="text-base text-gray-500">{educator}</p>
+        <p className="text-base text-gray-500">{educator?.name}</p>
         <div className="flex items-center gap-2">
           <p>{avgrating}</p>
           <div className="flex">

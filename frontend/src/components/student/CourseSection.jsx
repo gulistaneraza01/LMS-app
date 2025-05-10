@@ -5,6 +5,8 @@ import CourseCard from "./CourseCard";
 
 function CourseSection() {
   const { allCourses } = useAppContext();
+  console.log("b", { allCourses });
+
   return (
     <div className="text-center">
       <h2 className="text-2xl md:text-3xl text-gray-800 font-semibold">

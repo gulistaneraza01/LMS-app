@@ -5,6 +5,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
+import { ToastContainer } from "react-toastify";
 
 import {
   AddCourse,
@@ -48,6 +49,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       <RouterProvider router={router} />
+      <ToastContainer autoClose={3500} position="bottom-right" />
     </div>
   );
 }
